@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Чат‑мессенджер</title>
+<style>
+  body { font-family: Arial; padding: 20px; }
+  #chat { border: 1px solid #ccc; height: 400px; overflow-y: auto; padding: 10px; }
+  #chat li { margin: 5px 0; }
+  .user { color: blue; }
+  .friend { color: purple; }
+</style>
+</head>
+<body>
+
+<h2>Чат с другом</h2>
+<ul id="chat"></ul>
+
+<input id="m" placeholder="Введите сообщение" style="width:80%;">
+<button onclick="send()">Отправить</button>
+
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+const chat = document.getElementById('chat');
+const input = document.getElementById('m');
+
+// Подключаемся к серверу чата
+const socket = io('http://localhost:3000');
+
+let name = prompt("Введите ваше имя:");
+if (!name) name = "Вы";
+
+function send() {
+  const text = input.value.trim();
+  if (!text) return;
+  socket.emit('msg', { name, text });
+  input.value = '';
+}
+
+socket.on('msg', data => {
+  const li = document.createElement('li');
+  li.textContent = `${data.name}: ${data.text}`;
+  li.className = data.name === name ? 'user' : 'friend';
+  chat.appendChild(li);
+  chat.scrollTop = chat.scrollHeight;
+});
+
+input.addEventListener('keypress', e => {
+  if (e.key === 'Enter') send();
+});
+</script>
+
+</body>
+</html>
